@@ -7,12 +7,17 @@ services:
     build: .
     environment:
       DATABASE_URL: "host=db user=postgres password=postgres dbname=users_db sslmode=disable"
+      APP_PORT: 3000
     ports:
-      - "8000:8000"
+      - "3000:3000"
     depends_on:
       - db
       - cache
       - queue
+    networks:
+      - db_net
+      - cache_net
+      - queue_net
   db:
     container_name: csv_ingestor_db
     image: postgres:12
