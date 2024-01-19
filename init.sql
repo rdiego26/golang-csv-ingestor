@@ -10,3 +10,7 @@ create table if not exists users
     merged_at  timestamp with time zone
 );
 
+create index if not exists users_parent_id_index
+    on users (parent_id);
+
+
