@@ -49,6 +49,18 @@ func (s *APIServer) Run() {
 
 func getUsers(db *sql.DB) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		queryParams := r.URL.Query()
+		// Convert the url.Values map to a map[string]string
+		urlParams := make(map[string]string)
+		for key, values := range queryParams {
+			if len(values) > 0 {
+				urlParams[key] = values[0]
+			}
+		}
+
+		_ = filterParams(urlParams)
+
+		// TODO: build query based on params
 		rows, err := db.Query("SELECT id, first_name, last_name, email, parent_id FROM users")
 		if err != nil {
 			log.Fatal(err)
@@ -69,4 +81,23 @@ func getUsers(db *sql.DB) http.HandlerFunc {
 
 		json.NewEncoder(w).Encode(users)
 	}
+}
+
+func filterParams(receivedParams map[string]string) map[string]string {
+	result := make(map[string]string)
+	allowedParams := []string{"first_name", "last_name", "email", "parent_id"}
+
+	for key, value := range receivedParams {
+		for _, allowedKey := range allowedParams {
+			if key == allowedKey {
+				result[key] = value
+				break
+			}
+		}
+	}
+
+	log.Println("Received parameters:", receivedParams)
+	log.Println("Filtered parameters:", result)
+
+	return result
 }
