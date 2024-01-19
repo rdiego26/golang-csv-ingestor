@@ -1,0 +1,62 @@
+version: '3.7'
+
+services:
+  app:
+    container_name: csv_ingestor_app
+    image: rdiego26/csv-ingestor:1.0.0
+    build: .
+    environment:
+      DATABASE_URL: "host=db user=postgres password=postgres dbname=users_db sslmode=disable"
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db
+      - cache
+      - queue
+  db:
+    container_name: csv_ingestor_db
+    image: postgres:12
+    environment:
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_USER: postgres
+      POSTGRES_DB: users_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    networks:
+      - db_net
+  cache:
+    image: redis:6.2-alpine
+    restart: always
+    ports:
+      - "6379:6379"
+    command: redis-server --save 20 1 --loglevel warning --requirepass eYVX7EwVmmxKPCDmwMtyKVge8oLd2t81
+    volumes:
+      - cache:/data
+    networks:
+      - cache_net
+  queue:
+    image: rabbitmq:3-management-alpine
+    container_name: csv_ingestor_queue
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    volumes:
+      - ~/.docker-conf/rabbitmq/data/:/var/lib/rabbitmq/
+      - ~/.docker-conf/rabbitmq/log/:/var/log/rabbitmq
+    networks:
+      - queue_net
+
+volumes:
+  pgdata: {}
+  cache:
+    driver: local
+
+networks:
+  queue_net:
+    driver: bridge
+  db_net:
+    driver: bridge
+  cache_net:
+    driver: bridge
