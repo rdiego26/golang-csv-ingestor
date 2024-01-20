@@ -40,6 +40,9 @@ func getUsers(db *sql.DB) http.HandlerFunc {
 				args = append(args, value)
 				index++
 			}
+		} else {
+			// FIXME: implement pagination
+			query = query + " LIMIT 100"
 		}
 
 		rows, err := db.Query(query, args...)
