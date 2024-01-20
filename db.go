@@ -8,6 +8,16 @@ import (
 	"net/http"
 )
 
+func truncateUsers(db *sql.DB) {
+	query := "TRUNCATE TABLE users"
+
+	result, err := db.Query(query)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer result.Close()
+}
+
 func getUsers(db *sql.DB) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		queryParams := r.URL.Query()
