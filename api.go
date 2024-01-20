@@ -3,6 +3,7 @@ package main
 import (
 	"database/sql"
 	"encoding/json"
+	"fmt"
 	"github.com/gorilla/mux"
 	_ "github.com/lib/pq"
 	"log"
@@ -58,10 +59,20 @@ func getUsers(db *sql.DB) http.HandlerFunc {
 			}
 		}
 
-		_ = filterParams(urlParams)
+		mapParams := filterParams(urlParams)
+		query := "SELECT id, first_name, last_name, email, parent_id FROM users"
+		args := make([]interface{}, 0)
+		if len(mapParams) != 0 {
+			index := 1
+			query = query + " WHERE 1=1 "
+			for key, value := range mapParams {
+				query += fmt.Sprintf(" AND %s = $%d", key, index)
+				args = append(args, value)
+				index++
+			}
+		}
 
-		// TODO: build query based on params
-		rows, err := db.Query("SELECT id, first_name, last_name, email, parent_id FROM users")
+		rows, err := db.Query(query, args...)
 		if err != nil {
 			log.Fatal(err)
 		}
