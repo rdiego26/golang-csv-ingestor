@@ -14,14 +14,14 @@ func sendMessage(user User) {
 
 	if err != nil {
 		log.Println(err)
-		logger.Log(Error, fmt.Sprintf("Failed to connect to broker err: %v", err))
+		logger.Log(Fatal, fmt.Sprintf("Failed to connect to broker err: %v", err))
 	}
 
 	defer conn.Close()
 
 	ch, err := conn.Channel()
 	if err != nil {
-		logger.Log(Error, fmt.Sprintf("Failed to open a channel err: %v", err))
+		logger.Log(Fatal, fmt.Sprintf("Failed to open a channel err: %v", err))
 	}
 	defer ch.Close()
 
@@ -35,13 +35,13 @@ func sendMessage(user User) {
 		nil,                     // arguments
 	)
 	if err != nil {
-		logger.Log(Error, "Failed to declare a queue")
+		logger.Log(Fatal, "Failed to declare a queue")
 	}
 
 	// Convert struct to JSON
 	messageBody, err := json.Marshal(user)
 	if err != nil {
-		logger.Log(Error, fmt.Sprintf("Failed to marshal struct to JSON: %v", err))
+		logger.Log(Fatal, fmt.Sprintf("Failed to marshal struct to JSON: %v", err))
 	}
 
 	err = ch.Publish(

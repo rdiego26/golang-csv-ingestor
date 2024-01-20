@@ -22,16 +22,20 @@ const (
 	// Warning level indicates warnings.
 	Warning
 
+	// Fatal level indicates.
+	Fatal
+
+	// Fatal level indicates debug.
+	Debug
+
 	// Error level indicates errors.
 	Error
-
-	// Error level indicates debug.
-	Debug
 )
 
 var emojiMap = map[LogLevel]string{
 	Info:    "✨",
 	Warning: "⚠️",
+	Fatal:   "💣",
 	Error:   "❌",
 	Debug:   "🔎",
 }
@@ -54,7 +58,7 @@ func (l *Logger) Log(level LogLevel, message string) {
 	logEntry := fmt.Sprintf("[%s] %s %s: %s\n", currentTime, emoji, level, message)
 
 	// Write the log entry to the standard output.
-	if level != Error {
+	if level != Fatal {
 		fmt.Print(logEntry)
 	} else {
 		log.Fatalf(logEntry)

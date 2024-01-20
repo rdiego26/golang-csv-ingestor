@@ -26,7 +26,7 @@ func cleanTableBeforeImport() {
 
 	databaseURL := os.Getenv("DATABASE_URL")
 	if databaseURL == "" {
-		logger.Log(Error, "Please set the environment variable DATABASE_URL")
+		logger.Log(Fatal, "Please set the environment variable DATABASE_URL")
 	}
 
 	logger.Log(Info, "Connecting with database...")

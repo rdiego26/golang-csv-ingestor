@@ -60,7 +60,7 @@ func ProcessContacts(data [][]string) []User {
 				// Convert millisecond string to integer
 				milliseconds, err := parseMilliseconds(value)
 				if err != nil {
-					logger.Log(Error, fmt.Sprintf("Error parsing milliseconds from created_at value: %v", err))
+					logger.Log(Fatal, fmt.Sprintf("Fatal parsing milliseconds from created_at value: %v", err))
 				}
 
 				// Convert milliseconds to time.Time
@@ -70,7 +70,7 @@ func ProcessContacts(data [][]string) []User {
 				// Convert millisecond string to integer
 				milliseconds, err := parseMilliseconds(value)
 				if err != nil {
-					logger.Log(Error, fmt.Sprintf("Error parsing milliseconds from deleted_at value: %v", err))
+					logger.Log(Fatal, fmt.Sprintf("Fatal parsing milliseconds from deleted_at value: %v", err))
 				}
 
 				// Convert milliseconds to time.Time
@@ -80,7 +80,7 @@ func ProcessContacts(data [][]string) []User {
 				// Convert millisecond string to integer
 				milliseconds, err := parseMilliseconds(value)
 				if err != nil {
-					logger.Log(Error, fmt.Sprintf("Error parsing milliseconds from merged_at value: %v", err))
+					logger.Log(Fatal, fmt.Sprintf("Fatal parsing milliseconds from merged_at value: %v", err))
 				}
 
 				// Convert milliseconds to time.Time
@@ -89,7 +89,7 @@ func ProcessContacts(data [][]string) []User {
 			case 7:
 				parentId, err := uuid.Parse(value)
 				if err != nil {
-					logger.Log(Warning, fmt.Sprintf("Error parsing parent_id value(%s): %v", value, err))
+					logger.Log(Warning, fmt.Sprintf("Fatal parsing parent_id value(%s): %v", value, err))
 				}
 				user.ParentId = parentId
 			}
