@@ -22,10 +22,10 @@ const (
 	// Warning level indicates warnings.
 	Warning
 
-	// Fatal level indicates.
+	// Fatal level indicates fatal error.
 	Fatal
 
-	// Fatal level indicates debug.
+	// Debug level indicates debug.
 	Debug
 
 	// Error level indicates errors.
