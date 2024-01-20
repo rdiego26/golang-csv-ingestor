@@ -7,8 +7,6 @@ import (
 	"os"
 )
 
-//var mutex sync.Mutex
-
 func main() {
 	appPort := os.Getenv("APP_PORT")
 
@@ -49,7 +47,7 @@ func importData() {
 	log.Println(fmt.Sprintf("Parsed %d users", len(parsedUsers)))
 
 	//TODO fix connection with broker
-	//for _, user := range parsedUsers {
-	//	sendMessage(user)
-	//}
+	for _, user := range parsedUsers {
+		sendMessage(user)
+	}
 }
