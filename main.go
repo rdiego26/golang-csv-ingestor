@@ -2,7 +2,6 @@ package main
 
 import (
 	"database/sql"
-	"fmt"
 	"log"
 	"os"
 )
@@ -43,8 +42,6 @@ func importData() {
 	filePath := "./csv/users.csv"
 	fetchedContent := Read(filePath)
 	parsedUsers := ProcessContacts(fetchedContent)
-
-	log.Println(fmt.Sprintf("Parsed %d users", len(parsedUsers)))
 
 	for _, user := range parsedUsers {
 		sendMessage(user)
