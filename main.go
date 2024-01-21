@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"os"
 )
@@ -12,9 +13,9 @@ func main() {
 		log.Fatal("Please set the environment variable APP_PORT")
 	}
 
-	go cleanTableBeforeImport()
-	go importData()
-	//go startConsumer()
+	cleanTableBeforeImport()
+	go processAndPublishData()
+	go startConsumer()
 
 	server := NewAPIServer(":" + appPort)
 	server.Run()
@@ -28,16 +29,23 @@ func cleanTableBeforeImport() {
 	truncateUsers(db)
 }
 
-func importData() {
+func processAndPublishData() {
 	filePath := "./csv/users.csv"
 	fetchedContent := Read(filePath)
 	parsedUsers := ProcessContacts(fetchedContent)
 
+	logger := &Logger{}
+	logger.Log(Debug, fmt.Sprintf("Bulking %d users", len(parsedUsers)))
+	bulkInsertUsers(getConnection(), parsedUsers)
+
 	for _, user := range parsedUsers {
 		sendMessage(user)
 	}
+
 }
 
 func startConsumer() {
+	logger := &Logger{}
+	logger.Log(Debug, "Consumer was started!")
 	launchConsumer()
 }

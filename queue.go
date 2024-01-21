@@ -8,7 +8,7 @@ import (
 	"os"
 )
 
-func acquireChannel() *amqp.Channel {
+func launchConsumer() {
 	logger := &Logger{}
 	conn, err := amqp.Dial(os.Getenv("QUEUE_URL"))
 
@@ -24,52 +24,42 @@ func acquireChannel() *amqp.Channel {
 		logger.Log(Fatal, fmt.Sprintf("Failed to open a channel err: %v", err))
 	}
 
-	return ch
-}
+	defer ch.Close()
 
-func launchConsumer() {
-	logger := &Logger{}
-	ch := acquireChannel()
-
-	q, err := ch.QueueDeclare(
-		os.Getenv("QUEUE_NAME"), // name
-		false,                   // durable
-		false,                   // delete when unused
-		false,                   // exclusive
-		false,                   // no-wait
-		nil,                     // arguments
-	)
-	if err != nil {
-		logger.Log(Fatal, fmt.Sprintf("Failed to declare a queue: %v", err))
-	}
+	queueName := os.Getenv("QUEUE_NAME")
 
 	messages, err := ch.Consume(
-		q.Name, // queue
-		"",     // launchConsumer
-		true,   // auto-ack
-		false,  // exclusive
-		false,  // no-local
-		false,  // no-wait
-		nil,    // args
+		queueName, // queue
+		"",        // launchConsumer
+		true,      // auto-ack
+		false,     // exclusive
+		false,     // no-local
+		false,     // no-wait
+		nil,       // args
 	)
 	if err != nil {
 		logger.Log(Fatal, "Failed to register a launchConsumer")
 	}
 
+	logger.Log(Debug, fmt.Sprintf("Fetched %d messages from queue %s", len(messages), queueName))
+
 	forever := make(chan bool)
 	go func() {
-		for d := range messages {
+		var users []User
+		for message := range messages {
 			var user User
 			// Unmarshal the JSON data into the struct
-			err := json.Unmarshal(d.Body, &user)
+			err := json.Unmarshal(message.Body, &user)
 			if err != nil {
 				logger.Log(Error, fmt.Sprintf("Error while parsing message data: %v", err))
 				return
 			}
-			db := getConnection()
-			insertUser(db, user)
-			logger.Log(Info, fmt.Sprintf("Imported user: %s", user.Email))
+			users = append(users, user)
 		}
+		log.Println(fmt.Sprintf("Parsed %d users", len(users)))
+		db := getConnection()
+		bulkInsertUsers(db, users)
+		logger.Log(Info, fmt.Sprintf("Imported %d users", len(users)))
 	}()
 	<-forever
 }
@@ -85,15 +75,17 @@ func sendMessage(user User) {
 
 	defer conn.Close()
 
-	ch, err := conn.Channel()
+	channel, err := conn.Channel()
 	if err != nil {
 		logger.Log(Fatal, fmt.Sprintf("Failed to open a channel err: %v", err))
 	}
 
+	defer channel.Close()
+
 	// We create a Queue to send the message to.
-	queue, err := ch.QueueDeclare(
+	queue, err := channel.QueueDeclare(
 		os.Getenv("QUEUE_NAME"), // name
-		false,                   // durable
+		true,                    // durable
 		false,                   // delete when unused
 		false,                   // exclusive
 		false,                   // no-wait
@@ -109,16 +101,16 @@ func sendMessage(user User) {
 		logger.Log(Fatal, fmt.Sprintf("Failed to marshal struct to JSON: %v", err))
 	}
 
-	err = ch.Publish(
+	err = channel.Publish(
 		"",         // exchange
 		queue.Name, // routing key
 		false,      // mandatory
 		false,      // immediate
 		amqp.Publishing{
-			ContentType: "application/json",
-			Body:        messageBody,
+			DeliveryMode: amqp.Persistent,
+			ContentType:  "application/json",
+			Body:         messageBody,
 		})
 
-	defer ch.Close()
 	logger.Log(Info, fmt.Sprintf("Message was sent: %s", messageBody))
 }
