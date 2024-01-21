@@ -1,4 +1,4 @@
-## Next steps
+## Next steps (besides the pending points on README.md)
 - Use [Postgres ts vector](https://www.postgresql.org/docs/current/datatype-textsearch.html) data type to provide a full text search for users.
 - Implement login and use JWT to interact with API
 - Refactor code to use connection pool for database
@@ -6,3 +6,6 @@
 - ⚠️ Troubleshooting the problem with consumer (always getting 0 messages)
 - Finish [PR related load balancer](https://github.com/rdiego26/golang-users-api/pull/1)
 - Refactor code and use this [gin template](https://github.com/leozz37/gin-app-template)
+- Increase test coverage
+- Add Swagger with OAS
+- [SSL](https://brendanr.net/blog/go-docker-https/)

@@ -24,8 +24,8 @@ Golang's application that ingests initial data from a CSV, populates a queue whi
  - [ ] Address scalability with mechanisms for handling high data volume or traffic.
  - [ ] Implement load balancing, caching optimizations, or database sharding.
 - Error Handling and Logging
-  - [ ] Develop comprehensive error-handling to manage exceptions gracefully.
-  - [ ] Implement robust logging for effective troubleshooting and debugging. 
+  - [x] Develop comprehensive error-handling to manage exceptions gracefully.
+  - [x] Implement robust logging for effective troubleshooting and debugging. 
 - Performance Optimization
   - [x] Optimize API response times and resource utilization using techniques like query optimization, indexing, and caching.
 - Documentation
