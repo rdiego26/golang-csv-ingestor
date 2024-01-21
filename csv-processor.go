@@ -5,15 +5,15 @@ import (
 	"fmt"
 	"github.com/google/uuid"
 	"io"
-	"log"
 	"os"
 	"time"
 )
 
 func Read(filename string) [][]string {
+	logger := &Logger{}
 	file, err := os.Open(filename)
 	if err != nil {
-		log.Fatalf("fail to open %s file - %v", filename, err)
+		logger.Log(Fatal, fmt.Sprintf("fail to open %s file - %v", filename, err))
 		return nil
 	}
 
@@ -26,7 +26,7 @@ func Read(filename string) [][]string {
 		if csvErr == io.EOF {
 			break
 		} else if csvErr != nil {
-			log.Fatalf("Cannot read the content - %v", csvErr)
+			logger.Log(Fatal, fmt.Sprintf("Cannot read the content - %v", csvErr))
 		}
 		result = append(result, data)
 	}
@@ -35,15 +35,15 @@ func Read(filename string) [][]string {
 }
 
 func ProcessContacts(data [][]string) []User {
+	logger := &Logger{}
 	var users []User
 	for idx, line := range data {
 		if idx == 0 { // omit CSV header
-			log.Println("Skipping the csv header line")
+			logger.Log(Info, "Skipping the csv header line")
 			continue
 		}
 
 		newID := uuid.Must(uuid.NewRandom())
-		logger := &Logger{}
 		var user User
 		for col, value := range line {
 			switch col {
