@@ -55,7 +55,7 @@ func (l *Logger) Log(level LogLevel, message string) {
 	}
 
 	// Create the log entry.
-	logEntry := fmt.Sprintf("[%s] %s %s: %s\n", currentTime, emoji, level, message)
+	logEntry := fmt.Sprintf("[%s] %s: %s\n", currentTime, emoji, message)
 
 	// Write the log entry to the standard output.
 	if level != Fatal {
