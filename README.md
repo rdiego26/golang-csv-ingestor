@@ -29,7 +29,13 @@ Golang's application that ingests initial data from a CSV, populates a queue whi
 - Performance Optimization
   - [x] Optimize API response times and resource utilization using techniques like query optimization, indexing, and caching.
 - Documentation
-  - [ ] Provide thorough documentation, including code comments, API endpoint details, data models, and overall architecture. 
+  - [x] Provide thorough documentation, including code comments, API endpoint details, data models, and overall architecture. 
 - Container Orchestration
   - [ ] Deploy the application using Kubernetes.
   - [ ] Showcase container management and scaling in a production environment. 
+
+## Documentation files
+- [API](docs/api.md)
+- [Comments](docs/comments.md)
+- [Next Steps](docs/next-steps.md)
+- [Arch](docs/arch.md)
