@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"encoding/json"
 	"fmt"
+	"github.com/lib/pq"
 	"log"
 	"net/http"
 	"os"
@@ -37,16 +38,40 @@ func truncateUsers(db *sql.DB) {
 	defer result.Close()
 }
 
-func insertUser(db *sql.DB, user User) {
+func bulkInsertUsers(db *sql.DB, users []User) {
 	logger := &Logger{}
-	query := "INSERT INTO users(id, first_name, last_name, email, parent_id, created_at, deleted_at, merged_at) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)"
+	txn, err := db.Begin()
 
-	result, err := db.Query(query, user.ID, user.FirstName, user.LastName, user.Email, user.CreatedAt, user.DeletedAt, user.MergedAt)
 	if err != nil {
-		logger.Log(Error, fmt.Sprintf("Error while add user into users table: %v", err))
+		logger.Log(Fatal, fmt.Sprintf("Error while open transaction: %v", err))
 	}
-	defer result.Close()
 
+	stmt, err := txn.Prepare(pq.CopyIn("users", "id", "first_name", "last_name", "email", "parent_id", "created_at", "deleted_at", "merged_at"))
+	if err != nil {
+		logger.Log(Fatal, fmt.Sprintf("Error while prepare transaction: %v", err))
+	}
+
+	for _, user := range users {
+		_, err = stmt.Exec(user.ID, user.FirstName, user.LastName, user.Email, user.ParentId, user.CreatedAt, user.DeletedAt, user.MergedAt)
+		if err != nil {
+			logger.Log(Fatal, fmt.Sprintf("Error while parse values inside transaction: %v", err))
+		}
+	}
+
+	_, err = stmt.Exec()
+	if err != nil {
+		logger.Log(Fatal, fmt.Sprintf("Error perform transaction: %v", err))
+	}
+
+	err = stmt.Close()
+	if err != nil {
+		logger.Log(Fatal, fmt.Sprintf("Error while closing transaction: %v", err))
+	}
+
+	err = txn.Commit()
+	if err != nil {
+		logger.Log(Fatal, fmt.Sprintf("Error while commiting transaction: %v", err))
+	}
 }
 
 func getUsers(db *sql.DB) http.HandlerFunc {
