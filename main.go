@@ -1,7 +1,6 @@
 package main
 
 import (
-	"database/sql"
 	"log"
 	"os"
 )
@@ -15,6 +14,7 @@ func main() {
 
 	go cleanTableBeforeImport()
 	go importData()
+	//go startConsumer()
 
 	server := NewAPIServer(":" + appPort)
 	server.Run()
@@ -22,17 +22,7 @@ func main() {
 
 func cleanTableBeforeImport() {
 	logger := &Logger{}
-
-	databaseURL := os.Getenv("DATABASE_URL")
-	if databaseURL == "" {
-		logger.Log(Fatal, "Please set the environment variable DATABASE_URL")
-	}
-
-	logger.Log(Info, "Connecting with database...")
-	db, err := sql.Open("postgres", databaseURL)
-	if err != nil {
-		log.Fatal(err)
-	}
+	db := getConnection()
 
 	logger.Log(Info, "Truncating users table...")
 	truncateUsers(db)
@@ -46,4 +36,8 @@ func importData() {
 	for _, user := range parsedUsers {
 		sendMessage(user)
 	}
+}
+
+func startConsumer() {
+	launchConsumer()
 }

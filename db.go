@@ -6,16 +6,47 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"os"
 )
 
+func getConnection() *sql.DB {
+	logger := &Logger{}
+
+	databaseURL := os.Getenv("DATABASE_URL")
+	if databaseURL == "" {
+		logger.Log(Fatal, "Please set the environment variable DATABASE_URL")
+	}
+
+	logger.Log(Info, "Connecting with database...")
+	db, err := sql.Open("postgres", databaseURL)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	return db
+}
+
 func truncateUsers(db *sql.DB) {
+	logger := &Logger{}
 	query := "TRUNCATE TABLE users"
 
 	result, err := db.Query(query)
 	if err != nil {
-		log.Fatal(err)
+		logger.Log(Fatal, fmt.Sprintf("Error while truncate users table: %v", err))
 	}
 	defer result.Close()
+}
+
+func insertUser(db *sql.DB, user User) {
+	logger := &Logger{}
+	query := "INSERT INTO users(id, first_name, last_name, email, parent_id, created_at, deleted_at, merged_at) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)"
+
+	result, err := db.Query(query, user.ID, user.FirstName, user.LastName, user.Email, user.CreatedAt, user.DeletedAt, user.MergedAt)
+	if err != nil {
+		logger.Log(Error, fmt.Sprintf("Error while add user into users table: %v", err))
+	}
+	defer result.Close()
+
 }
 
 func getUsers(db *sql.DB) http.HandlerFunc {

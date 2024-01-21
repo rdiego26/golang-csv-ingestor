@@ -13,7 +13,7 @@ Golang's application that ingests initial data from a CSV, populates a queue whi
 
 ## Requirements
 - Core
- - [ ] CSV File Ingestion and Queue: Create an application that ingests a CSV file and sends its content to a message queue in the RabbitMQ broker.
+ - [x] CSV File Ingestion and Queue: Create an application that ingests a CSV file and sends its content to a message queue in the RabbitMQ broker.
  - [ ] Message Processing and Storage: Develop an application that consumes messages from the queue, structures them, and stores the data in both a PostgreSQL database and a Redis cache.
  - [x] API Development: Extend the consumer application to also serve as an API. The API should expose data via the HTTP protocol. Ensure that the GET method includes filters for queries, allowing for customizable data retrieval.
 - Security
