@@ -1,88 +1,23 @@
-version: '3.7'
-
+version: '3'
 services:
-  app:
-    container_name: csv_ingestor_app
-    image: rdiego26/csv-ingestor:1.0.0
-    build: .
+  backend:
+    build: ./server
     environment:
-      DATABASE_URL: "host=db user=postgres password=postgres dbname=users_db sslmode=disable"
-      QUEUE_URL: "amqp://admin:admin123@queue:5672/"
-      QUEUE_NAME: "users-ingested"
-      APP_PORT: 3000
-    ports:
-      - "3000:3000"
-    depends_on:
-      db:
-        condition: service_healthy
-      cache:
-        condition: service_healthy
-      queue:
-        condition: service_healthy
+      - PORT=3000
+    deploy:
+      replicas: 2
     networks:
-      - db_net
-      - cache_net
-      - queue_net
-  db:
-    container_name: csv_ingestor_db
-    image: postgres:12
-    environment:
-      POSTGRES_PASSWORD: postgres
-      POSTGRES_USER: postgres
-      POSTGRES_DB: users_db
-    ports:
-      - "5432:5432"
-    volumes:
-      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
-      - pgdata:/var/lib/postgresql/data
-    healthcheck:
-      test: [ "CMD-SHELL", "pg_isready -U postgres" ]
-      interval: 10s
-      timeout: 10s
-      retries: 6
-    networks:
-      - db_net
-  cache:
-    image: redis:6.2-alpine
-    restart: always
-    ports:
-      - "6379:6379"
-    command: redis-server --save 20 1 --loglevel warning --requirepass eYVX7EwVmmxKPCDmwMtyKVge8oLd2t81
-    volumes:
-      - cache:/data
-    healthcheck:
-      test: [ "CMD", "redis-cli", "--raw", "incr", "ping" ]
-    networks:
-      - cache_net
-  queue:
-    image: rabbitmq:3-management-alpine
-    container_name: csv_ingestor_queue
-    environment:
-      - RABBITMQ_DEFAULT_USER=admin
-      - RABBITMQ_DEFAULT_PASS=admin123
-    ports:
-      - "5672:5672"
-      - "15672:15672"
-    healthcheck:
-      test: [ "CMD", "nc", "-z", "localhost", "5672" ]
-      interval: 10s
-      timeout: 10s
-      retries: 5
-    volumes:
-      - ~/.docker-conf/rabbitmq/data/:/var/lib/rabbitmq/
-      - ~/.docker-conf/rabbitmq/log/:/var/log/rabbitmq
-    networks:
-      - queue_net
+      - loadbalancing
 
-volumes:
-  pgdata: {}
-  cache:
-    driver: local
+  nginx:
+    build: ./nginx
+    container_name: nginx
+    ports:
+      - "80:80"
+    networks:
+      - loadbalancing
+    depends_on:
+      - backend
 
 networks:
-  queue_net:
-    driver: bridge
-  db_net:
-    driver: bridge
-  cache_net:
-    driver: bridge
+  loadbalancing:
